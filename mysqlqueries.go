@@ -30,7 +30,6 @@ last_login DATETIME NOT NULL,
 PRIMARY KEY(id)
 );
 `
-
 	MYSQL_QUERY_USERID = `SELECT * FROM $TABLE_NAME$ WHERE id=?;`
 
 	MYSQL_QUERY_USERNAME = `SELECT * FROM $TABLE_NAME$ WHERE username=?;`
@@ -47,9 +46,9 @@ SET username=?, password=?, email=?, first_name=?, last_name=?,
 	is_superuser=?, is_staff=?, is_active=?, date_joined=?, last_login=?
 WHERE id=?;`
 
-	MYSQL_DELETE_USER = `DELETE FROM $TABLE_NAME$ WHERE id = ?;`
+	MYSQL_DELETE_USER = `DELETE FROM $TABLE_NAME$ WHERE id=?;`
 
 	MYSQL_UPDATE_USER_FIELDS = `UPDATE $TABLE_NAME$
 SET $UPDATE_CONTENT$
-WHERE id = ?;`
+WHERE id=?;`
 )

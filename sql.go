@@ -66,7 +66,7 @@ func (q *MySQLQueries) GetUser() string {
 }
 
 func (q *MySQLQueries) GetUserByName() string {
-	return q.GetUserByEmailS
+	return q.GetUserByNameS
 }
 
 func (q *MySQLQueries) GetUserByEmail() string {
@@ -109,7 +109,7 @@ func (b MySQLBridge) ConvertTimeScanType(val interface{}) (time.Time, error) {
 			reflect.TypeOf(val))
 	}
 	if !nt.Valid {
-		return zeroT, errors.New("got NULL dateime, expected to be not NULL")
+		return zeroT, errors.New("MySQLBridge.ConvertScanType: got NULL datetime, expected to be not NULL")
 	}
 	return nt.Time, nil
 }
@@ -183,8 +183,6 @@ func (s *MySQLStorage) UpdateUser(id gopherbouncedb.UserID, newCredentials *goph
 	updateStr := strings.Join(updates, ",")
 	// replace updateStr in UpdateFieldS
 	stmt := strings.Replace(s.UpdateFieldsS, "$UPDATE_CONTENT$", updateStr, 1)
-	fmt.Println(stmt)
-	fmt.Println(args)
 	// execute statement
 	_, err := s.DB.Exec(stmt, args...)
 	if err != nil {
