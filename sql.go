@@ -57,7 +57,7 @@ func NewMySQLQueries(replaceMapping map[string]string) *MySQLQueries {
 	return res
 }
 
-func (q *MySQLQueries) Init() []string {
+func (q *MySQLQueries) InitUsers() []string {
 	return q.InitS
 }
 
