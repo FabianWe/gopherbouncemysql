@@ -51,7 +51,7 @@ func NewMySQLQueries(replaceMapping map[string]string) *MySQLQueries {
 	res.GetUserS = replacer.Apply(MYSQL_QUERY_USERID)
 	res.GetUserByNameS = replacer.Apply(MYSQL_QUERY_USERNAME)
 	res.GetUserByEmailS = replacer.Apply(MYSQL_QUERY_USERMAIL)
-	res.InsertUserS = replacer.Apply(INSERT_USER)
+	res.InsertUserS = replacer.Apply(MYSQL_INSERT_USER)
 	res.UpdateUserS = replacer.Apply(MYSQL_UPDATE_USER)
 	res.DeleteUserS = replacer.Apply(MYSQL_DELETE_USER)
 	return res
@@ -120,14 +120,14 @@ func (b MySQLBridge) ConvertTime(t time.Time) interface{} {
 
 func (b MySQLBridge) ConvertExistsErr(err error) error {
 	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == MYSQL_KEY_EXITS {
-		return gopherbouncedb.NewUserExists(fmt.Sprintf("unique constrained failed: %v", mysqlErr))
+		return gopherbouncedb.NewUserExists(fmt.Sprintf("unique constrained failed: %s", mysqlErr.Error()))
 	}
 	return err
 }
 
 func (b MySQLBridge) ConvertAmbiguousErr(err error) error {
 	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == MYSQL_KEY_EXITS {
-		return gopherbouncedb.NewAmbiguousCredentials(fmt.Sprintf("unique constrained failed: %v", mysqlErr))
+		return gopherbouncedb.NewAmbiguousCredentials(fmt.Sprintf("unique constrained failed: %s", mysqlErr.Error()))
 	}
 	return err
 }
@@ -161,9 +161,9 @@ func (s *MySQLStorage) UpdateUser(id gopherbouncedb.UserID, newCredentials *goph
 		if colName, has := DefaultMySQLUserRowNames[fieldName]; has {
 			updates[i] = colName + "=?"
 		} else {
-			return fmt.Errorf("Invalid field name \"%s\": Must be a valid field name of the user model", fieldName)
+			return fmt.Errorf("invalid field name \"%s\": Must be a valid field name of the user model", fieldName)
 		}
-		if arg, argErr := newCredentials.GetFieldByName(fieldName);argErr == nil {
+		if arg, argErr := newCredentials.GetFieldByName(fieldName); argErr == nil {
 			fieldName = strings.ToLower(fieldName)
 			if fieldName == "datejoined" || fieldName == "lastlogin" {
 				if t, isTime := arg.(time.Time); isTime {

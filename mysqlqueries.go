@@ -36,7 +36,7 @@ PRIMARY KEY(id)
 
 	MYSQL_QUERY_USERMAIL = `SELECT * FROM $TABLE_NAME$ WHERE email=?;`
 
-	INSERT_USER = `INSERT INTO $TABLE_NAME$(
+	MYSQL_INSERT_USER = `INSERT INTO $TABLE_NAME$(
 username, password, email, first_name, last_name, is_superuser, is_staff,
 is_active, date_joined, last_login)
 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
