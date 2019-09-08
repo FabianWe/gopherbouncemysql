@@ -118,18 +118,18 @@ func (b MySQLBridge) ConvertTime(t time.Time) interface{} {
 	return t
 }
 
-func (b MySQLBridge) ConvertExistsErr(err error) error {
+func (b MySQLBridge) IsDuplicateInsert(err error) bool {
 	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == MYSQL_KEY_EXITS {
-		return gopherbouncedb.NewUserExists(fmt.Sprintf("unique constrained failed: %s", mysqlErr.Error()))
+		return true
 	}
-	return err
+	return false
 }
 
-func (b MySQLBridge) ConvertAmbiguousErr(err error) error {
+func (b MySQLBridge) IsDuplicateUpdate(err error) bool {
 	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == MYSQL_KEY_EXITS {
-		return gopherbouncedb.NewAmbiguousCredentials(fmt.Sprintf("unique constrained failed: %s", mysqlErr.Error()))
+		return true
 	}
-	return err
+	return false
 }
 
 var (
@@ -186,7 +186,10 @@ func (s *MySQLStorage) UpdateUser(id gopherbouncedb.UserID, newCredentials *goph
 	// execute statement
 	_, err := s.DB.Exec(stmt, args...)
 	if err != nil {
-		return s.Bridge.ConvertAmbiguousErr(err)
+		if s.Bridge.IsDuplicateUpdate(err) {
+			return gopherbouncedb.NewAmbiguousCredentials(fmt.Sprintf("unique constraint failed: %s", err.Error()))
+		}
+		return err
 	}
 	return nil
 }
