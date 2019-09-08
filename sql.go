@@ -80,7 +80,7 @@ func (q *MySQLQueries) InsertUser() string {
 }
 
 func (q *MySQLQueries) UpdateUser(fields []string) string {
-	if len(fields) == 0 {
+	if len(fields) == 0 || !q.SupportsUserFields() {
 		return q.UpdateUserS
 	}
 	updates := make([]string, len(fields))
@@ -155,14 +155,14 @@ var (
 	DefaultMySQLUserRowNames = gopherbouncedb.DefaultUserRowNames
 )
 
-type MySQLStorage struct {
+type MySQLUserStorage struct {
 	*gopherbouncedb.SQLUserStorage
 }
 
-func NewMySQLStorage(db *sql.DB, replaceMapping map[string]string) *MySQLStorage {
+func NewMySQLUserStorage(db *sql.DB, replaceMapping map[string]string) *MySQLUserStorage {
 	queries := NewMySQLQueries(replaceMapping)
 	bridge := NewMySQLBridge()
 	sqlStorage := gopherbouncedb.NewSQLUserStorage(db, queries, bridge)
-	res := MySQLStorage{sqlStorage}
+	res := MySQLUserStorage{sqlStorage}
 	return &res
 }
