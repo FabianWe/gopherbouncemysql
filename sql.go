@@ -15,24 +15,31 @@
 package gopherbouncemysql
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"github.com/FabianWe/gopherbouncedb"
 	"github.com/go-sql-driver/mysql"
-	"database/sql"
-	"time"
-	"fmt"
 	"reflect"
-	"errors"
 	"strings"
+	"time"
+)
+
+var (
+	DefaultMySQLUserRowNames = gopherbouncedb.DefaultUserRowNames
 )
 
 const (
-	MYSQL_KEY_EXITS = 1062
+	// MySQLKeyExists is the error key in the mysql driver that states
+	// that a key error occurred.
+	MySQLKeyExists = 1062
 )
 
+// MySQLQueries implements gopherbouncedb.UserSQL with support for MySQL.
 type MySQLQueries struct {
-	InitS                                                                            []string
+	InitS []string
 	GetUserS, GetUserByNameS, GetUserByEmailS, InsertUserS,
-		UpdateUserS, DeleteUserS, UpdateFieldsS string
+	UpdateUserS, DeleteUserS, UpdateFieldsS string
 	Replacer *gopherbouncedb.SQLTemplateReplacer
 }
 
@@ -48,14 +55,14 @@ func NewMySQLQueries(replaceMapping map[string]string) *MySQLQueries {
 	res := &MySQLQueries{}
 	res.Replacer = replacer
 	// first all init strings
-	res.InitS = append(res.InitS, replacer.Apply(MYSQL_USERS_INIT))
-	res.GetUserS = replacer.Apply(MYSQL_QUERY_USERID)
-	res.GetUserByNameS = replacer.Apply(MYSQL_QUERY_USERNAME)
-	res.GetUserByEmailS = replacer.Apply(MYSQL_QUERY_USERMAIL)
-	res.InsertUserS = replacer.Apply(MYSQL_INSERT_USER)
-	res.UpdateUserS = replacer.Apply(MYSQL_UPDATE_USER)
-	res.DeleteUserS = replacer.Apply(MYSQL_DELETE_USER)
-	res.UpdateFieldsS = replacer.Apply(MYSQL_UPDATE_USER_FIELDS)
+	res.InitS = append(res.InitS, replacer.Apply(MySQLUsersInit))
+	res.GetUserS = replacer.Apply(MySQLQueryUserID)
+	res.GetUserByNameS = replacer.Apply(MySQLQueryUsername)
+	res.GetUserByEmailS = replacer.Apply(MySQLQueryUserEmail)
+	res.InsertUserS = replacer.Apply(MySQLInsertUser)
+	res.UpdateUserS = replacer.Apply(MySQLUpdateUser)
+	res.DeleteUserS = replacer.Apply(MySQLDeleteUser)
+	res.UpdateFieldsS = replacer.Apply(MySQLUpdateUserFields)
 	return res
 }
 
@@ -138,22 +145,18 @@ func (b MySQLBridge) ConvertTime(t time.Time) interface{} {
 }
 
 func (b MySQLBridge) IsDuplicateInsert(err error) bool {
-	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == MYSQL_KEY_EXITS {
+	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == MySQLKeyExists {
 		return true
 	}
 	return false
 }
 
 func (b MySQLBridge) IsDuplicateUpdate(err error) bool {
-	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == MYSQL_KEY_EXITS {
+	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == MySQLKeyExists {
 		return true
 	}
 	return false
 }
-
-var (
-	DefaultMySQLUserRowNames = gopherbouncedb.DefaultUserRowNames
-)
 
 type MySQLUserStorage struct {
 	*gopherbouncedb.SQLUserStorage

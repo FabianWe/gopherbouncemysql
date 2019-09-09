@@ -15,7 +15,7 @@
 package gopherbouncemysql
 
 const (
-	MYSQL_USERS_INIT = `CREATE TABLE IF NOT EXISTS $USERS_TABLE_NAME$ (
+	MySQLUsersInit = `CREATE TABLE IF NOT EXISTS $USERS_TABLE_NAME$ (
 id BIGINT AUTO_INCREMENT,
 username VARCHAR(150) NOT NULL UNIQUE,
 password VARCHAR(270) NOT NULL,
@@ -30,25 +30,25 @@ last_login DATETIME NOT NULL,
 PRIMARY KEY(id)
 );
 `
-	MYSQL_QUERY_USERID = `SELECT * FROM $USERS_TABLE_NAME$ WHERE id=?;`
+	MySQLQueryUserID = `SELECT * FROM $USERS_TABLE_NAME$ WHERE id=?;`
 
-	MYSQL_QUERY_USERNAME = `SELECT * FROM $USERS_TABLE_NAME$ WHERE username=?;`
+	MySQLQueryUsername = `SELECT * FROM $USERS_TABLE_NAME$ WHERE username=?;`
 
-	MYSQL_QUERY_USERMAIL = `SELECT * FROM $USERS_TABLE_NAME$ WHERE email=?;`
+	MySQLQueryUserEmail = `SELECT * FROM $USERS_TABLE_NAME$ WHERE email=?;`
 
-	MYSQL_INSERT_USER = `INSERT INTO $USERS_TABLE_NAME$(
+	MySQLInsertUser = `INSERT INTO $USERS_TABLE_NAME$(
 username, password, email, first_name, last_name, is_superuser, is_staff,
 is_active, date_joined, last_login)
 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
 
-	MYSQL_UPDATE_USER = `UPDATE $USERS_TABLE_NAME$
+	MySQLUpdateUser = `UPDATE $USERS_TABLE_NAME$
 SET username=?, password=?, email=?, first_name=?, last_name=?,
 	is_superuser=?, is_staff=?, is_active=?, date_joined=?, last_login=?
 WHERE id=?;`
 
-	MYSQL_DELETE_USER = `DELETE FROM $USERS_TABLE_NAME$ WHERE id=?;`
+	MySQLDeleteUser = `DELETE FROM $USERS_TABLE_NAME$ WHERE id=?;`
 
-	MYSQL_UPDATE_USER_FIELDS = `UPDATE $USERS_TABLE_NAME$
+	MySQLUpdateUserFields = `UPDATE $USERS_TABLE_NAME$
 SET $UPDATE_CONTENT$
 WHERE id=?;`
 )

@@ -16,12 +16,12 @@ package gopherbouncemysql
 
 import (
 	"database/sql"
-	"os"
 	"fmt"
 	"github.com/FabianWe/gopherbouncedb"
-	"log"
-	"testing"
 	"github.com/FabianWe/gopherbouncedb/testsuite"
+	"log"
+	"os"
+	"testing"
 )
 
 func setupPostgreConfigString() string {
@@ -50,7 +50,7 @@ func setupPostgreConfigString() string {
 	return config
 }
 
-type mysqlTestBinding struct{
+type mysqlTestBinding struct {
 	db *sql.DB
 }
 
