@@ -41,6 +41,7 @@ type MySQLQueries struct {
 	GetUserS, GetUserByNameS, GetUserByEmailS, InsertUserS,
 	UpdateUserS, DeleteUserS, UpdateFieldsS string
 	Replacer *gopherbouncedb.SQLTemplateReplacer
+	RowNames map[string]string
 }
 
 func DefaultMySQLReplacer() *gopherbouncedb.SQLTemplateReplacer {
@@ -63,6 +64,7 @@ func NewMySQLQueries(replaceMapping map[string]string) *MySQLQueries {
 	res.UpdateUserS = replacer.Apply(MySQLUpdateUser)
 	res.DeleteUserS = replacer.Apply(MySQLDeleteUser)
 	res.UpdateFieldsS = replacer.Apply(MySQLUpdateUserFields)
+	res.RowNames = DefaultMySQLUserRowNames
 	return res
 }
 
@@ -92,7 +94,7 @@ func (q *MySQLQueries) UpdateUser(fields []string) string {
 	}
 	updates := make([]string, len(fields))
 	for i, fieldName := range fields {
-		if colName, has := DefaultMySQLUserRowNames[fieldName]; has {
+		if colName, has := q.RowNames[fieldName]; has {
 			updates[i] = colName + "=?"
 		} else {
 			panic(fmt.Sprintf("invalid field name \"%s\": Must be a valid field name of gopherbouncedb.UserModel", fieldName))
