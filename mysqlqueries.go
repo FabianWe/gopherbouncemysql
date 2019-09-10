@@ -51,4 +51,23 @@ WHERE id=?;`
 	MySQLUpdateUserFields = `UPDATE $USERS_TABLE_NAME$
 SET $UPDATE_CONTENT$
 WHERE id=?;`
+
+	MySQLSessionInit = `CREATE TABLE IF NOT EXISTS $SESSIONS_TABLE_NAME$ (
+session_key VARCHAR(40) NOT NULL,
+user BIGINT NOT NULL REFERENCES $USERS_TABLE_NAME$(id)
+	ON DELETE CASCADE,
+expire_date DATETIME NOT NULL,
+PRIMARY KEY(session_key)
+);`
+
+	MySQLInsertSession = `INSERT INTO $SESSIONS_TABLE_NAME$(
+session_key, user, expire_date) VALUES(?, ?, ?);`
+
+	MySQLGetSession = `SELECT * FROM $SESSIONS_TABLE_NAME$ WHERE session_key=?;`
+
+	MySQLDeleteSession = `DELETE FROM $SESSIONS_TABLE_NAME$ WHERE session_key=?;`
+
+	MySQLCleanUpSession = `DELETE FROM $SESSIONS_TABLE_NAME$ WHERE expire_date < ?;`
+
+	MySQLDeleteForUser = `DELETE FROM $SESSIONS_TABLE_NAME$ WHERE user=?;`
 )

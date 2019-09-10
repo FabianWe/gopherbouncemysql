@@ -50,21 +50,26 @@ func setupPostgreConfigString() string {
 	return config
 }
 
-type mysqlTestBinding struct {
+type mysqlUserTestBinding struct {
 	db *sql.DB
 }
 
-func newMySQLTestBinding() *mysqlTestBinding {
-	return &mysqlTestBinding{nil}
+func newMySQLUserTestBinding() *mysqlUserTestBinding {
+	return &mysqlUserTestBinding{nil}
 }
 
 func removeData(db *sql.DB) error {
 	stmt := `DROP TABLE IF EXISTS auth_user;`
 	_, err := db.Exec(stmt)
+	if err != nil {
+		return err
+	}
+	stmt = `DROP TABLE IF EXISTS auth_session;`
+	_, err = db.Exec(stmt)
 	return err
 }
 
-func (b *mysqlTestBinding) BeginInstance() gopherbouncedb.UserStorage {
+func (b *mysqlUserTestBinding) BeginInstance() gopherbouncedb.UserStorage {
 	// create db
 	db, dbErr := sql.Open("mysql", setupPostgreConfigString())
 	if dbErr != nil {
@@ -81,7 +86,7 @@ func (b *mysqlTestBinding) BeginInstance() gopherbouncedb.UserStorage {
 	return storage
 }
 
-func (b *mysqlTestBinding) CloseInstance(s gopherbouncedb.UserStorage) {
+func (b *mysqlUserTestBinding) CloseInstance(s gopherbouncedb.UserStorage) {
 	if removeErr := removeData(b.db); removeErr != nil {
 		log.Printf("can't delete table entries: %s\n", removeErr.Error())
 	}
@@ -91,21 +96,77 @@ func (b *mysqlTestBinding) CloseInstance(s gopherbouncedb.UserStorage) {
 }
 
 func TestInit(t *testing.T) {
-	testsuite.TestInitSuite(newMySQLTestBinding(), t)
+	testsuite.TestInitSuite(newMySQLUserTestBinding(), t)
 }
 
 func TestInsert(t *testing.T) {
-	testsuite.TestInsertSuite(newMySQLTestBinding(), true, t)
+	testsuite.TestInsertSuite(newMySQLUserTestBinding(), true, t)
 }
 
 func TestLookup(t *testing.T) {
-	testsuite.TestLookupSuite(newMySQLTestBinding(), true, t)
+	testsuite.TestLookupSuite(newMySQLUserTestBinding(), true, t)
 }
 
 func TestUpdate(t *testing.T) {
-	testsuite.TestUpdateUserSuite(newMySQLTestBinding(), true, t)
+	testsuite.TestUpdateUserSuite(newMySQLUserTestBinding(), true, t)
 }
 
 func TestDelete(t *testing.T) {
-	testsuite.TestDeleteUserSuite(newMySQLTestBinding(), true, t)
+	testsuite.TestDeleteUserSuite(newMySQLUserTestBinding(), true, t)
+}
+type mysqlSessionTestBinding struct {
+	db *sql.DB
+}
+
+func newMySQLSessionTestBinding() *mysqlSessionTestBinding {
+	return &mysqlSessionTestBinding{nil}
+}
+
+func (b *mysqlSessionTestBinding) BeginInstance() gopherbouncedb.SessionStorage {
+	// create db
+	db, dbErr := sql.Open("mysql", setupPostgreConfigString())
+	if dbErr != nil {
+		panic(fmt.Sprintf("Can't create database: %s", dbErr.Error()))
+	}
+	// don't know exactly why this is required, but here we are
+	db.SetMaxIdleConns(0)
+	b.db = db
+	// clear tables
+	if removeErr := removeData(b.db); removeErr != nil {
+		log.Printf("can't delete table entries: %s\n", removeErr.Error())
+	}
+	return NewMySQLSessionStorage(db, nil)
+}
+
+func (b *mysqlSessionTestBinding) CloseInstance(s gopherbouncedb.SessionStorage) {
+	if removeErr := removeData(b.db); removeErr != nil {
+		log.Printf("can't delete table entries: %s\n", removeErr.Error())
+	}
+	if closeErr := b.db.Close(); closeErr != nil {
+		panic(fmt.Sprintf("Can't close database: %s", closeErr.Error()))
+	}
+}
+
+func TestSessionInit(t *testing.T) {
+	testsuite.TestInitSessionSuite(newMySQLSessionTestBinding(), t)
+}
+
+func TestSessionInsert(t *testing.T) {
+	testsuite.TestSessionInsert(newMySQLSessionTestBinding(), t)
+}
+
+func TestSessionGet(t *testing.T) {
+	testsuite.TestSessionGet(newMySQLSessionTestBinding(), t)
+}
+
+func TestSessionDelete(t *testing.T) {
+	testsuite.TestSessionDelete(newMySQLSessionTestBinding(), t)
+}
+
+func TestSessionCleanUp(t *testing.T) {
+	testsuite.TestSessionCleanUp(newMySQLSessionTestBinding(), t)
+}
+
+func TestSessionDeleteForUser(t *testing.T) {
+	testsuite.TestSessionDeleteForUser(newMySQLSessionTestBinding(), t)
 }
