@@ -239,3 +239,18 @@ func NewMySQLSessionStorage(db *sql.DB, replaceMapping map[string]string) *MySQL
 	sqlStorage := gopherbouncedb.NewSQLSessionStorage(db, queries, bridge)
 	return &MySQLSessionStorage{sqlStorage}
 }
+
+// MySQLStorage combines a user storage and a session storage (both based on MySQL)
+// to implement gopherbouncedb.GoauthStorage.
+type MySQLStorage struct {
+	*MySQLUserStorage
+	*MySQLSessionStorage
+}
+
+// NewMySQLStorage returns a new MySQLStorage.
+func NewMySQLStorage(db *sql.DB, replaceMapping map[string]string) *MySQLStorage {
+	return &MySQLStorage{
+		NewMySQLUserStorage(db, replaceMapping),
+		NewMySQLSessionStorage(db, replaceMapping),
+	}
+}
