@@ -81,7 +81,7 @@ func (b *mysqlTestBinding) BeginInstance() gopherbouncedb.UserStorage {
 	return storage
 }
 
-func (b *mysqlTestBinding) ClosteInstance(s gopherbouncedb.UserStorage) {
+func (b *mysqlTestBinding) CloseInstance(s gopherbouncedb.UserStorage) {
 	if removeErr := removeData(b.db); removeErr != nil {
 		log.Printf("can't delete table entries: %s\n", removeErr.Error())
 	}
