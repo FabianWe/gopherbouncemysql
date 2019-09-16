@@ -86,7 +86,7 @@ func (b MySQLBridge) IsDuplicateUpdate(err error) bool {
 type MySQLUserQueries struct {
 	InitS []string
 	GetUserS, GetUserByNameS, GetUserByEmailS, InsertUserS,
-	UpdateUserS, DeleteUserS, UpdateFieldsS string
+	UpdateUserS, DeleteUserS, UpdateFieldsS, ListUsersS string
 	Replacer *gopherbouncedb.SQLTemplateReplacer
 	RowNames map[string]string
 }
@@ -111,6 +111,7 @@ func NewMySQLUserQueries(replaceMapping map[string]string) *MySQLUserQueries {
 	res.UpdateUserS = replacer.Apply(MySQLUpdateUser)
 	res.DeleteUserS = replacer.Apply(MySQLDeleteUser)
 	res.UpdateFieldsS = replacer.Apply(MySQLUpdateUserFields)
+	res.ListUsersS = replacer.Apply(MySQLListUsers)
 	res.RowNames = DefaultMySQLUserRowNames
 	return res
 }
@@ -154,6 +155,10 @@ func (q *MySQLUserQueries) UpdateUser(fields []string) string {
 
 func (q *MySQLUserQueries) DeleteUser() string {
 	return q.DeleteUserS
+}
+
+func (q *MySQLUserQueries) ListUsers() string {
+	return q.ListUsersS
 }
 
 func (q *MySQLUserQueries) SupportsUserFields() bool {
@@ -241,7 +246,7 @@ func NewMySQLSessionStorage(db *sql.DB, replaceMapping map[string]string) *MySQL
 }
 
 // MySQLStorage combines a user storage and a session storage (both based on MySQL)
-// to implement gopherbouncedb.GoauthStorage.
+// to implement gopherbouncedb.Storage.
 type MySQLStorage struct {
 	*MySQLUserStorage
 	*MySQLSessionStorage
